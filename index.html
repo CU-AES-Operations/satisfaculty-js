@@ -15,7 +15,8 @@
     header { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap;
              padding: 16px 24px; background: var(--head); border-bottom: 1px solid var(--line); }
     h1 { font-size: 20px; margin: 0; }
-    #status { color: var(--muted); }
+    #status { color: var(--muted); margin-left: auto; }
+    .source { color: var(--blue); }
     main { display: grid; grid-template-columns: 340px 1fr; gap: 20px; padding: 24px; align-items: start; }
     @media (max-width: 860px) { main { grid-template-columns: 1fr; } }
     .panel { border: 1px solid var(--line); border-radius: 8px; padding: 18px 20px; min-width: 0; }
@@ -57,6 +58,7 @@
     <header>
         <h1>Satisfaculty: Teaching Assignments</h1>
         <div id="status">No inputs loaded</div>
+        <a class="source" href="https://github.com/zsunberg/satisfaculty-js">Source code</a>
     </header>
     <main>
         <div>
