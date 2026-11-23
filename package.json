@@ -1,0 +1,14 @@
+{
+  "name": "satisfaculty-js",
+  "version": "1.0.0",
+  "description": "In-browser optimizer for faculty teaching assignments",
+  "scripts": {
+    "test": "node --test"
+  },
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "highs": "^1.16.0",
+    "xlsx": "^0.18.5"
+  }
+}
