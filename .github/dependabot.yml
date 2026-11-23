@@ -1,0 +1,13 @@
+# Open a pull request when a new version of the solver (or another dependency) appears.
+# The tests run on it; merging it deploys the site with the new version.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    versioning-strategy: increase
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

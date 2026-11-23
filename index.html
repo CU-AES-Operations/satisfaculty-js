@@ -94,15 +94,20 @@
 </div>
 
 <script type="module">
-    import loadHighs from "https://cdn.jsdelivr.net/npm/highs@1.16.0/build/highs.mjs";
-    import * as XLSX from "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/xlsx.mjs";
     import { readTables, buildData } from "./src/inputs.js";
     import { readCuAesTables } from "./cu-aes/inputs.js";
     import { solveAssignment, tcByRank, loadDifferences, toCSV } from "./src/solve.js";
     import { constraints, objectives } from "./rules/assignment.js";
 
+    // The solver and the spreadsheet reader come from the jsDelivr CDN, at exactly the versions
+    // listed in package.json: the same versions the tests ran against before this page was deployed.
+    const versions = (await (await fetch("./package.json")).json()).dependencies;
+    const cdn = (name) => `https://cdn.jsdelivr.net/npm/${name}@${versions[name]}/`;
+    const { default: loadHighs } = await import(cdn("highs") + "build/highs.mjs");
+    const XLSX = await import(cdn("xlsx") + "xlsx.mjs");
+
     const $ = (id) => document.getElementById(id);
-    const highsReady = loadHighs({ locateFile: (f) => "https://cdn.jsdelivr.net/npm/highs@1.16.0/build/" + f });
+    const highsReady = loadHighs({ locateFile: (f) => cdn("highs") + "build/" + f });
     const TABLES = [["faculty", true], ["courses", true], ["preferences", true], ["forced", false], ["banned", false], ["limits", false]];
     let data = null;  // the inputs, once they have been read successfully
 

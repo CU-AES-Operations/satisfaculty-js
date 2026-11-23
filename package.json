@@ -8,7 +8,7 @@
   "license": "MIT",
   "type": "module",
   "dependencies": {
-    "highs": "^1.16.0",
-    "xlsx": "^0.18.5"
+    "highs": "1.16.0",
+    "xlsx": "0.18.5"
   }
 }

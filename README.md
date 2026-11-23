@@ -21,3 +21,9 @@ node run/assign.js examples/anonymized-ay26-27/anonymized-ay26-27.xlsx
 ```
 
 Real faculty data must never be committed. Keep it in `data/`, which is gitignored.
+
+## Deployment and library versions
+
+Every push runs the tests (GitHub Actions); a push to `master` that passes is published with GitHub Pages.
+The page loads HiGHS and SheetJS from the jsDelivr CDN at the exact versions in `package.json`, the same
+ones the tests use. Dependabot opens a pull request when a new version appears; merging it updates the site.
