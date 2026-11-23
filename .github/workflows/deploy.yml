@@ -13,7 +13,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -35,7 +35,7 @@ jobs:
       group: pages
       cancel-in-progress: false
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       # The site is these files as they are; there is no build step.
       # package.json is included because the page reads the library versions from it.
       - run: mkdir _site && cp -r index.html package.json src rules cu-aes examples _site/
