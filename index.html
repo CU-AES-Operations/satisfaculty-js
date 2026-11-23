@@ -3,219 +3,35 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Satisfaculty: Teaching Assignments</title>
-<style>
-    :root {
-        --blue: #1f5fae; --ink: #1c2330; --muted: #5b6472; --line: #d9dde4; --page: #f2f4f7; --head: #f8f9fb;
-        --green: #1a7f37; --orange: #b4540a;
-    }
-    * { box-sizing: border-box; }
-    body { font: 15px/1.45 system-ui, "Noto Sans", sans-serif; color: var(--ink); background: var(--page); margin: 0; padding: 20px; }
-    .app { max-width: 1280px; margin: 0 auto; background: #fff; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
-    header { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap;
-             padding: 16px 24px; background: var(--head); border-bottom: 1px solid var(--line); }
-    h1 { font-size: 20px; margin: 0; }
-    #status { color: var(--muted); margin-left: auto; }
-    .source { color: var(--blue); }
-    main { display: grid; grid-template-columns: 340px 1fr; gap: 20px; padding: 24px; align-items: start; }
-    @media (max-width: 860px) { main { grid-template-columns: 1fr; } }
-    .panel { border: 1px solid var(--line); border-radius: 8px; padding: 18px 20px; min-width: 0; }
-    .panel + .panel { margin-top: 20px; }
-    h2 { font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 0 0 12px; }
-    h2 span { text-transform: none; letter-spacing: 0; font-weight: 400; margin-left: 8px; }
-
-    .file { display: flex; justify-content: space-between; gap: 12px; padding: 9px 12px; margin-bottom: 8px;
-            border: 1px solid var(--line); border-radius: 6px; }
-    .file b::before { content: "✓ "; color: var(--green); }
-    .file.missing { border-style: dashed; color: var(--muted); }
-    .file.missing b { font-weight: 400; }
-    .file.missing b::before { content: "+ "; color: var(--muted); }
-    .file.required { color: var(--orange); }
-    .file span { color: var(--muted); white-space: nowrap; }
-    .hint { color: var(--muted); font-size: 14px; margin: 10px 0 14px; }
-    #inputs.dragging { outline: 2px dashed var(--blue); outline-offset: -6px; }
-
-    button, .button { font: inherit; font-weight: 600; padding: 8px 18px; border-radius: 6px; cursor: pointer;
-                      border: 1px solid var(--line); background: #fff; color: var(--ink); display: inline-block; }
-    button.primary { background: var(--blue); border-color: var(--blue); color: #fff; }
-    button:disabled { opacity: .45; cursor: default; }
-    .buttons { display: flex; gap: 10px; flex-wrap: wrap; }
-
-    .scroll { overflow-x: auto; }
-    table { border-collapse: collapse; width: 100%; }
-    th { text-align: left; font-weight: 600; color: var(--muted); background: var(--head); }
-    th, td { padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
-    td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
-    td.ok { color: var(--green); white-space: nowrap; }
-    #warnings { color: var(--orange); margin: 12px 0 0; padding-left: 20px; font-size: 14px; }
-    #warnings:empty { display: none; }
-    #warnings li.recommended { color: var(--muted); }
-    .empty { color: var(--muted); }
-</style>
+<title>Satisfaculty</title>
+<link rel="stylesheet" href="site.css">
 </head>
 <body>
 <div class="app">
     <header>
-        <h1>Satisfaculty: Teaching Assignments</h1>
-        <div id="status">No inputs loaded</div>
-        <a class="source" href="https://github.com/CU-AES-Operations/satisfaculty-js">Source code</a>
+        <h1><a href="">Satisfaculty</a></h1>
+        <nav>
+            <a href="teaching-assignments/">Teaching Assignments</a>
+            <a href="course-scheduling/">Course Scheduling</a>
+            <a href="schedule-visualization/">Schedule Visualization</a>
+        </nav>
+        <a class="source" style="margin-left: auto" href="https://github.com/CU-AES-Operations/satisfaculty-js">Source code</a>
     </header>
-    <main>
-        <div>
-            <section class="panel" id="inputs">
-                <h2>Input tables</h2>
-                <div id="tables"></div>
-                <p class="hint">Choose or drop one workbook with a tab per table, or one file per table (.xlsx or .csv).
-                    Nothing is uploaded anywhere; data stays in this browser tab on your computer.</p>
-                <div class="buttons">
-                    <label class="button">Choose file(s)<input type="file" id="file" accept=".xlsx,.csv" multiple hidden></label>
-                    <button class="primary" id="solve" disabled>Solve ▶</button>
-                </div>
-                <ul id="warnings"></ul>
-            </section>
-            <section class="panel">
-                <h2>TC by preference rank</h2>
-                <div id="ranks" class="empty">Not solved yet.</div>
-            </section>
-            <section class="panel">
-                <h2>Loads outside the target</h2>
-                <div id="loads" class="empty">Not solved yet.</div>
-            </section>
-        </div>
-        <div>
-            <section class="panel">
-                <h2>Goals, in priority order</h2>
-                <div id="goals" class="empty">Not solved yet.</div>
-            </section>
-            <section class="panel">
-                <h2>Assignments <span id="download"></span></h2>
-                <div id="assignments" class="empty scroll">Not solved yet.</div>
-            </section>
-        </div>
+    <main class="cards">
+        <a class="panel card" href="teaching-assignments/">
+            <h2>Teaching Assignments</h2>
+            <p>Decide which faculty teach which courses, from loads and preference surveys.</p>
+        </a>
+        <a class="panel card" href="course-scheduling/">
+            <h2>Course Scheduling</h2>
+            <p>Give each class a room and a time slot. <span class="soon">Coming soon.</span></p>
+        </a>
+        <a class="panel card" href="schedule-visualization/">
+            <h2>Schedule Visualization</h2>
+            <p>Draw a schedule as a room-by-time grid for each day, and download it as SVG or PNG.</p>
+        </a>
     </main>
+    <p class="hint" style="padding: 0 24px 20px; margin: 0">Everything runs in your browser tab. Nothing is uploaded anywhere.</p>
 </div>
-
-<script type="module">
-    import { readTables, buildData } from "./src/inputs.js";
-    import { readCuAesTables } from "./cu-aes/inputs.js";
-    import { solveAssignment, tcByRank, loadDifferences, toCSV } from "./src/solve.js";
-    import { constraints, objectives } from "./rules/assignment.js";
-
-    // The solver and the spreadsheet reader come from the jsDelivr CDN, at exactly the versions
-    // listed in package.json: the same versions the tests ran against before this page was deployed.
-    const versions = (await (await fetch("./package.json")).json()).dependencies;
-    const cdn = (name) => `https://cdn.jsdelivr.net/npm/${name}@${versions[name]}/`;
-    const { default: loadHighs } = await import(cdn("highs") + "build/highs.mjs");
-    const XLSX = await import(cdn("xlsx") + "xlsx.mjs");
-
-    const $ = (id) => document.getElementById(id);
-    const highsReady = loadHighs({ locateFile: (f) => cdn("highs") + "build/" + f });
-    const TABLES = [["faculty", true], ["courses", true], ["preferences", true], ["forced", false], ["banned", false], ["limits", false]];
-    let data = null;  // the inputs, once they have been read successfully
-
-    // Create an element: el("td", { className: "num" }, "text or child", ...)
-    function el(tag, properties = {}, ...children) {
-        const element = Object.assign(document.createElement(tag), properties);
-        element.append(...children);
-        return element;
-    }
-
-    // columns: [{ title, numeric?, className? }]; rows: arrays of cell text
-    function table(columns, rows) {
-        const cell = (tag, text, c) => el(tag, { className: [c.numeric ? "num" : "", tag === "td" ? c.className ?? "" : ""].join(" ") }, String(text));
-        return el("table", {},
-            el("tr", {}, ...columns.map((c) => cell("th", c.title, c))),
-            ...rows.map((row) => el("tr", {}, ...row.map((text, i) => cell("td", text, columns[i])))));
-    }
-
-    function showTables(tables = {}) {
-        $("tables").replaceChildren(...TABLES.map(([name, required]) => {
-            const rows = tables[name];
-            if (rows) return el("div", { className: "file" }, el("b", {}, name), el("span", {}, `${rows.length} rows`));
-            return el("div", { className: "file missing" + (required ? " required" : "") },
-                el("b", {}, name), el("span", {}, required ? "required" : "optional"));
-        }));
-    }
-
-    function clearResults() {
-        for (const id of ["goals", "ranks", "loads", "assignments"]) {
-            $(id).replaceChildren("Not solved yet.");
-            $(id).classList.add("empty");
-        }
-        $("download").replaceChildren();
-    }
-
-    // files: [{ name, bytes }]
-    function loadInputs(files) {
-        data = null;
-        $("solve").disabled = true;
-        $("warnings").replaceChildren();
-        clearResults();
-        try {
-            const cuAes = readCuAesTables(XLSX, files);  // null unless these are the CU AES staff files
-            const tables = cuAes ? cuAes.tables : readTables(XLSX, files);
-            showTables(tables);
-            const built = buildData(tables);
-            data = built.data;
-            $("warnings").append(...[...built.warnings, ...(cuAes?.warnings ?? [])].map((warning) =>
-                el("li", { className: warning.startsWith("Recommended") ? "recommended" : "" }, warning)));
-            $("status").textContent = `${data.faculty.length} faculty, ${data.courses.length} courses · loaded from ${files.length} file${files.length === 1 ? "" : "s"}`;
-            $("solve").disabled = false;
-        } catch (error) {
-            $("status").textContent = "Could not read the inputs";
-            $("warnings").append(el("li", {}, error.message));
-        }
-    }
-
-    async function solve() {
-        $("status").textContent = "Solving…";
-        try {
-            const highs = await highsReady;
-            const start = performance.now();
-            const { stages, rows, loads } = solveAssignment(highs, data, constraints, objectives);
-            $("status").textContent = `Solved in ${((performance.now() - start) / 1000).toFixed(2)} s · ${rows.filter((r) => r.sections > 0).length} assignments`;
-
-            const totals = tcByRank(rows);
-            const show = (id, content) => { $(id).replaceChildren(content); $(id).classList.remove("empty"); };
-            show("goals", table(
-                [{ title: "#" }, { title: "Goal" }, { title: "Result", numeric: true }, { title: "Status", className: "ok" }],
-                stages.map((s, i) => [i + 1, "Minimize " + s.name, s.value.toFixed(2) + " TC", `✓ optimal, ${s.seconds.toFixed(2)} s`])));
-            show("ranks", table(
-                [{ title: "Rank" }, { title: "TC assigned", numeric: true }],
-                Object.keys(totals).map((rank) => [rank, totals[rank].toFixed(2)])));
-            const differences = loadDifferences(loads);
-            show("loads", differences.length === 0 ? "Everyone is within their target load." : table(
-                [{ title: "Faculty" }, { title: "Target", numeric: true }, { title: "Assigned", numeric: true }, { title: "Difference", numeric: true }],
-                differences.map((l) => [l.faculty, l.minTC === l.maxTC ? l.maxTC : `${l.minTC} to ${l.maxTC}`, l.tc.toFixed(2),
-                    `${Math.abs(l.difference).toFixed(2)} ${l.difference > 0 ? "over" : "under"}`])));
-            show("assignments", table(
-                [{ title: "Course" }, { title: "Faculty" }, { title: "Sections", numeric: true }, { title: "TC", numeric: true }, { title: "Rank", numeric: true }],
-                rows.map((r) => [r.course, r.faculty, r.sections, r.tc.toFixed(2), r.rank])));
-            const csv = URL.createObjectURL(new Blob([toCSV(rows)], { type: "text/csv" }));
-            $("download").replaceChildren(el("a", { href: csv, download: "assignments.csv" }, "Download assignments.csv"));
-        } catch (error) {
-            $("status").textContent = "Solve failed";
-            $("warnings").append(el("li", {}, error.message));
-        }
-    }
-
-    const readFiles = (fileList) => Promise.all([...fileList].map(async (f) => ({ name: f.name, bytes: await f.arrayBuffer() })));
-    $("file").onchange = async () => loadInputs(await readFiles($("file").files));
-    $("solve").onclick = solve;
-
-    // Dropping files on the input panel works the same as choosing them.
-    $("inputs").ondragover = (event) => { event.preventDefault(); $("inputs").classList.add("dragging"); };
-    $("inputs").ondragleave = () => $("inputs").classList.remove("dragging");
-    $("inputs").ondrop = async (event) => {
-        event.preventDefault();
-        $("inputs").classList.remove("dragging");
-        loadInputs(await readFiles(event.dataTransfer.files));
-    };
-
-    showTables();
-    // For local testing, ?data=URL,URL loads the inputs from URLs instead of the file picker.
-    const urls = new URLSearchParams(location.search).get("data")?.split(",") ?? [];
-    if (urls.length) loadInputs(await Promise.all(urls.map(async (u) => ({ name: u, bytes: await (await fetch(u)).arrayBuffer() }))));
-</script>
 </body>
 </html>

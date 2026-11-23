@@ -37,8 +37,8 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       # The site is these files as they are; there is no build step.
-      # package.json is included because the page reads the library versions from it.
-      - run: mkdir _site && cp -r index.html package.json src rules cu-aes examples _site/
+      # package.json is included because the pages read the library versions from it.
+      - run: mkdir _site && cp -r index.html site.css package.json teaching-assignments course-scheduling schedule-visualization src rules cu-aes examples _site/
       - uses: actions/upload-pages-artifact@v5
         with:
           path: _site

@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Satisfaculty: Teaching Assignments</title>
+<link rel="stylesheet" href="../site.css">
+</head>
+<body>
+<div class="app">
+    <header>
+        <h1><a href="../">Satisfaculty</a></h1>
+        <nav>
+            <a href="../teaching-assignments/" class="current">Teaching Assignments</a>
+            <a href="../course-scheduling/">Course Scheduling</a>
+            <a href="../schedule-visualization/">Schedule Visualization</a>
+        </nav>
+        <div id="status">No inputs loaded</div>
+        <a class="source" href="https://github.com/CU-AES-Operations/satisfaculty-js">Source code</a>
+    </header>
+    <main>
+        <div>
+            <section class="panel" id="inputs">
+                <h2>Input tables</h2>
+                <div id="tables"></div>
+                <p class="hint">Choose or drop one workbook with a tab per table, or one file per table (.xlsx or .csv).
+                    Nothing is uploaded anywhere; data stays in this browser tab on your computer.</p>
+                <div class="buttons">
+                    <label class="button">Choose file(s)<input type="file" id="file" accept=".xlsx,.csv" multiple hidden></label>
+                    <button class="primary" id="solve" disabled>Solve ▶</button>
+                </div>
+                <ul id="warnings"></ul>
+            </section>
+            <section class="panel">
+                <h2>TC by preference rank</h2>
+                <div id="ranks" class="empty">Not solved yet.</div>
+            </section>
+            <section class="panel">
+                <h2>Loads outside the target</h2>
+                <div id="loads" class="empty">Not solved yet.</div>
+            </section>
+        </div>
+        <div>
+            <section class="panel">
+                <h2>Goals, in priority order</h2>
+                <div id="goals" class="empty">Not solved yet.</div>
+            </section>
+            <section class="panel">
+                <h2>Assignments <span id="download"></span></h2>
+                <div id="assignments" class="empty scroll">Not solved yet.</div>
+            </section>
+        </div>
+    </main>
+</div>
+
+<script type="module">
+    import { readTables, buildData } from "../src/inputs.js";
+    import { readCuAesTables } from "../cu-aes/inputs.js";
+    import { solveAssignment, tcByRank, loadDifferences, toCSV } from "../src/solve.js";
+    import { constraints, objectives } from "../rules/assignment.js";
+
+    // The solver and the spreadsheet reader come from the jsDelivr CDN, at exactly the versions
+    // listed in package.json: the same versions the tests ran against before this page was deployed.
+    const versions = (await (await fetch("../package.json")).json()).dependencies;
+    const cdn = (name) => `https://cdn.jsdelivr.net/npm/${name}@${versions[name]}/`;
+    const { default: loadHighs } = await import(cdn("highs") + "build/highs.mjs");
+    const XLSX = await import(cdn("xlsx") + "xlsx.mjs");
+
+    const $ = (id) => document.getElementById(id);
+    const highsReady = loadHighs({ locateFile: (f) => cdn("highs") + "build/" + f });
+    const TABLES = [["faculty", true], ["courses", true], ["preferences", true], ["forced", false], ["banned", false], ["limits", false]];
+    let data = null;  // the inputs, once they have been read successfully
+
+    // Create an element: el("td", { className: "num" }, "text or child", ...)
+    function el(tag, properties = {}, ...children) {
+        const element = Object.assign(document.createElement(tag), properties);
+        element.append(...children);
+        return element;
+    }
+
+    // columns: [{ title, numeric?, className? }]; rows: arrays of cell text
+    function table(columns, rows) {
+        const cell = (tag, text, c) => el(tag, { className: [c.numeric ? "num" : "", tag === "td" ? c.className ?? "" : ""].join(" ") }, String(text));
+        return el("table", {},
+            el("tr", {}, ...columns.map((c) => cell("th", c.title, c))),
+            ...rows.map((row) => el("tr", {}, ...row.map((text, i) => cell("td", text, columns[i])))));
+    }
+
+    function showTables(tables = {}) {
+        $("tables").replaceChildren(...TABLES.map(([name, required]) => {
+            const rows = tables[name];
+            if (rows) return el("div", { className: "file" }, el("b", {}, name), el("span", {}, `${rows.length} rows`));
+            return el("div", { className: "file missing" + (required ? " required" : "") },
+                el("b", {}, name), el("span", {}, required ? "required" : "optional"));
+        }));
+    }
+
+    function clearResults() {
+        for (const id of ["goals", "ranks", "loads", "assignments"]) {
+            $(id).replaceChildren("Not solved yet.");
+            $(id).classList.add("empty");
+        }
+        $("download").replaceChildren();
+    }
+
+    // files: [{ name, bytes }]
+    function loadInputs(files) {
+        data = null;
+        $("solve").disabled = true;
+        $("warnings").replaceChildren();
+        clearResults();
+        try {
+            const cuAes = readCuAesTables(XLSX, files);  // null unless these are the CU AES staff files
+            const tables = cuAes ? cuAes.tables : readTables(XLSX, files);
+            showTables(tables);
+            const built = buildData(tables);
+            data = built.data;
+            $("warnings").append(...[...built.warnings, ...(cuAes?.warnings ?? [])].map((warning) =>
+                el("li", { className: warning.startsWith("Recommended") ? "recommended" : "" }, warning)));
+            $("status").textContent = `${data.faculty.length} faculty, ${data.courses.length} courses · loaded from ${files.length} file${files.length === 1 ? "" : "s"}`;
+            $("solve").disabled = false;
+        } catch (error) {
+            $("status").textContent = "Could not read the inputs";
+            $("warnings").append(el("li", {}, error.message));
+        }
+    }
+
+    async function solve() {
+        $("status").textContent = "Solving…";
+        try {
+            const highs = await highsReady;
+            const start = performance.now();
+            const { stages, rows, loads } = solveAssignment(highs, data, constraints, objectives);
+            $("status").textContent = `Solved in ${((performance.now() - start) / 1000).toFixed(2)} s · ${rows.filter((r) => r.sections > 0).length} assignments`;
+
+            const totals = tcByRank(rows);
+            const show = (id, content) => { $(id).replaceChildren(content); $(id).classList.remove("empty"); };
+            show("goals", table(
+                [{ title: "#" }, { title: "Goal" }, { title: "Result", numeric: true }, { title: "Status", className: "ok" }],
+                stages.map((s, i) => [i + 1, "Minimize " + s.name, s.value.toFixed(2) + " TC", `✓ optimal, ${s.seconds.toFixed(2)} s`])));
+            show("ranks", table(
+                [{ title: "Rank" }, { title: "TC assigned", numeric: true }],
+                Object.keys(totals).map((rank) => [rank, totals[rank].toFixed(2)])));
+            const differences = loadDifferences(loads);
+            show("loads", differences.length === 0 ? "Everyone is within their target load." : table(
+                [{ title: "Faculty" }, { title: "Target", numeric: true }, { title: "Assigned", numeric: true }, { title: "Difference", numeric: true }],
+                differences.map((l) => [l.faculty, l.minTC === l.maxTC ? l.maxTC : `${l.minTC} to ${l.maxTC}`, l.tc.toFixed(2),
+                    `${Math.abs(l.difference).toFixed(2)} ${l.difference > 0 ? "over" : "under"}`])));
+            show("assignments", table(
+                [{ title: "Course" }, { title: "Faculty" }, { title: "Sections", numeric: true }, { title: "TC", numeric: true }, { title: "Rank", numeric: true }],
+                rows.map((r) => [r.course, r.faculty, r.sections, r.tc.toFixed(2), r.rank])));
+            const csv = URL.createObjectURL(new Blob([toCSV(rows)], { type: "text/csv" }));
+            $("download").replaceChildren(el("a", { href: csv, download: "assignments.csv" }, "Download assignments.csv"));
+        } catch (error) {
+            $("status").textContent = "Solve failed";
+            $("warnings").append(el("li", {}, error.message));
+        }
+    }
+
+    const readFiles = (fileList) => Promise.all([...fileList].map(async (f) => ({ name: f.name, bytes: await f.arrayBuffer() })));
+    $("file").onchange = async () => loadInputs(await readFiles($("file").files));
+    $("solve").onclick = solve;
+
+    // Dropping files on the input panel works the same as choosing them.
+    $("inputs").ondragover = (event) => { event.preventDefault(); $("inputs").classList.add("dragging"); };
+    $("inputs").ondragleave = () => $("inputs").classList.remove("dragging");
+    $("inputs").ondrop = async (event) => {
+        event.preventDefault();
+        $("inputs").classList.remove("dragging");
+        loadInputs(await readFiles(event.dataTransfer.files));
+    };
+
+    showTables();
+    // For local testing, ?data=URL,URL loads the inputs from URLs instead of the file picker.
+    const urls = new URLSearchParams(location.search).get("data")?.split(",") ?? [];
+    if (urls.length) loadInputs(await Promise.all(urls.map(async (u) => ({ name: u, bytes: await (await fetch(u)).arrayBuffer() }))));
+</script>
+</body>
+</html>

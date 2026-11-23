@@ -36,7 +36,12 @@ files -> src/inputs.js -> data -> src/assignment.js + rules/assignment.js -> src
 - `src/inputs.js` — reads the standard spreadsheet tables (one workbook with a tab per table, or one file per
   table) and validates them. The table formats are documented at the top of the file.
 - `src/solve.js` — builds the model, solves it, and turns the solution into rows for display and CSV.
-- `index.html` — the whole web page: layout, styles, and a short script that calls the modules above.
+- `teaching-assignments/index.html` — the teaching-assignments page: layout and a short script that calls the
+  modules above.
+- `index.html`, `site.css` — the front page linking the three sections, and the styles every page shares.
+- `course-scheduling/index.html` — a placeholder until scheduling is built.
+- `schedule-visualization/index.html` — draws a schedule file (csv or xlsx) as a room-by-time grid per day,
+  with SVG and PNG downloads. It is self-contained and has no tests yet.
 - `run/assign.js` — the same solve from the command line.
 - `cu-aes/` — CU Boulder Aerospace only: converts the files that department's staff currently keep into the
   standard tables. It is a temporary bridge and will be removed.
@@ -67,7 +72,7 @@ folder removes it cleanly. The main code should work for any department that sup
 
 **Library versions in `package.json` must be exact** (no `^` or `~`). The page reads that file and loads
 HiGHS and SheetJS from the jsDelivr CDN at those versions, so the live site uses exactly what the tests ran
-against. Do not write a version number into `index.html`. Dependabot proposes updates.
+against. Do not write a version number into any page. Dependabot proposes updates.
 
 **Test before committing.** Run `npm test`. Add a test with every change to the model or the readers: a
 small hand-built case with a known answer is the preferred kind (see `test/model.test.js`).

@@ -12,7 +12,10 @@ WebAssembly. So far: teaching assignments, from the command line or a bare web p
 - `examples/anonymized-ay26-27/` — realistic example inputs with made-up names and course titles.
 - `test/` — solves the example and checks the result.
 - `cu-aes/` — CU Boulder Aerospace only: converts the files the staff currently keep into the standard tables.
-- `index.html` — the web page: choose the input spreadsheets, press Solve.
+- `index.html`, `site.css` — the site's front page and shared styles.
+- `teaching-assignments/` — the web page: choose the input spreadsheets, press Solve.
+- `course-scheduling/` — placeholder for the scheduler, which is not built yet.
+- `schedule-visualization/` — draws a schedule file as a room-by-time grid.
 
 ```bash
 npm install
